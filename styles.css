@@ -61,20 +61,29 @@ body {
 /* --- TEMPLATE 2: MODERN (Dark Side) --- */
 .template-modern .modern-sidebar {
     background-color: #1e293b;
-    /* Fallback */
-    /* Slate 800 */
     color: white;
     print-color-adjust: exact;
 }
 
 .template-modern .modern-header {
     background: #f8fafc;
-    border-bottom: 44px solid #3b82f6;
-    /* Blue 500 */
+    border-bottom: 44px solid var(--primary);
 }
 
 .template-modern h3 {
-    color: #3b82f6;
+    color: var(--primary);
+}
+
+.template-modern .accent-bg {
+    background-color: var(--primary) !important;
+}
+
+.template-modern .accent-text {
+    color: var(--primary) !important;
+}
+
+.template-modern .accent-border {
+    border-color: var(--primary) !important;
 }
 
 /* Template 4: Creative */
@@ -119,12 +128,17 @@ body {
 }
 
 .template-academic .section-header {
-    border-bottom: 1px solid black;
+    border-bottom: 2px solid var(--primary);
     margin-bottom: 10px;
     padding-bottom: 2px;
     text-transform: uppercase;
     font-weight: bold;
     font-size: 11pt;
+    color: var(--primary);
+}
+
+.template-academic .header-border {
+    border-color: var(--primary);
 }
 
 /* Drag & Drop */

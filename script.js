@@ -404,14 +404,14 @@ function renderModern(container) {
             <div class="mb-8">
                 <div class="w-32 h-32 bg-slate-600 rounded-full mx-auto mb-4 flex items-center justify-center text-4xl">${resumeData.name.charAt(0)}</div>
                 <h1 class="text-2xl font-bold text-center mb-2 leading-tight">${resumeData.name}</h1>
-                <p class="text-center text-blue-300 text-sm uppercase tracking-wider">${resumeData.title}</p>
+                <p class="text-center accent-text text-sm uppercase tracking-wider">${resumeData.title}</p>
             </div>
             <div class="space-y-8 text-sm">
                 <section>
                     <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4 border-b border-slate-600 pb-2">Contact</h3>
                     <div class="space-y-3">
-                        <div class="flex items-center gap-3"><i class="fa-solid fa-envelope text-blue-400 w-4"></i><span class="font-light">${resumeData.email}</span></div>
-                        <div class="flex items-center gap-3"><i class="fa-solid fa-phone text-blue-400 w-4"></i><span class="font-light">${resumeData.phone}</span></div>
+                        <div class="flex items-center gap-3"><i class="fa-solid fa-envelope accent-text w-4"></i><span class="font-light">${resumeData.email}</span></div>
+                        <div class="flex items-center gap-3"><i class="fa-solid fa-phone accent-text w-4"></i><span class="font-light">${resumeData.phone}</span></div>
                     </div>
                 </section>
                 <section>
@@ -428,13 +428,13 @@ function renderModern(container) {
         </div>
         <div class="w-2/3 p-10 bg-white">
             <section class="mb-10">
-                <h3 class="text-xl font-bold text-slate-800 uppercase tracking-wide mb-4 flex items-center gap-2"><span class="w-8 h-1 bg-blue-500 block"></span> Profile</h3>
+                <h3 class="text-xl font-bold text-slate-800 uppercase tracking-wide mb-4 flex items-center gap-2"><span class="w-8 h-1 accent-bg block"></span> Profile</h3>
                 <p class="text-slate-600 leading-relaxed text-sm text-justify">${resumeData.summary}</p>
             </section>
             <section>
-                <h3 class="text-xl font-bold text-slate-800 uppercase tracking-wide mb-6 flex items-center gap-2"><span class="w-8 h-1 bg-blue-500 block"></span> Experience</h3>
+                <h3 class="text-xl font-bold text-slate-800 uppercase tracking-wide mb-6 flex items-center gap-2"><span class="w-8 h-1 accent-bg block"></span> Experience</h3>
                 <div class="space-y-8 border-l-2 border-slate-100 pl-6 ml-1">
-                    ${resumeData.experience.map(exp => `<div class="relative"><div class="absolute -left-[31px] top-1 w-4 h-4 bg-white border-2 border-blue-500 rounded-full"></div><div class="flex justify-between items-baseline mb-1"><h4 class="font-bold text-lg text-slate-800">${exp.role}</h4><span class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">${exp.start} - ${exp.end}</span></div><p class="text-sm font-medium text-slate-500 mb-2">${exp.company}</p><p class="text-sm text-slate-600 leading-relaxed">${exp.desc}</p></div>`).join('')}
+                    ${resumeData.experience.map(exp => `<div class="relative"><div class="absolute -left-[31px] top-1 w-4 h-4 bg-white border-2 accent-border rounded-full"></div><div class="flex justify-between items-baseline mb-1"><h4 class="font-bold text-lg text-slate-800">${exp.role}</h4><span class="text-xs font-bold accent-text bg-gray-50 px-2 py-1 rounded">${exp.start} - ${exp.end}</span></div><p class="text-sm font-medium text-slate-500 mb-2">${exp.company}</p><p class="text-sm text-slate-600 leading-relaxed">${exp.desc}</p></div>`).join('')}
                 </div>
             </section>
         </div>
@@ -545,7 +545,7 @@ function renderCreative(container) {
 function renderAcademic(container) {
     container.classList.add('template-academic');
     container.innerHTML = `
-        <div class="text-center border-b-2 border-black pb-4 mb-6">
+        <div class="text-center border-b-2 header-border pb-4 mb-6">
             <h1 class="text-3xl font-bold uppercase mb-2">${resumeData.name}</h1>
             <p>${resumeData.email} | ${resumeData.phone}</p>
         </div>
@@ -599,7 +599,7 @@ window.openAiModal = function (type, index) {
     document.getElementById('ai-keywords').value = '';
 }
 
-const INTEGRATED_API_KEY = "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";
+const INTEGRATED_API_KEY = "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";
 
 async function runAiGeneration() {
     if (!activeAiField) return;
