@@ -599,7 +599,7 @@ window.openAiModal = function (type, index) {
     document.getElementById('ai-keywords').value = '';
 }
 
-const INTEGRATED_API_KEY = "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";
+const INTEGRATED_API_KEY = "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";
 
 async function runAiGeneration() {
     if (!activeAiField) return;
