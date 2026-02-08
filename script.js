@@ -695,4 +695,3 @@ function generateSmartMock(type, tone, keywords) {
     else text += ` Also, ${mockPhrases.achievements[0]}`;
     return text;
 }
-```
