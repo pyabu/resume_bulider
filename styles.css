@@ -1,25 +1,56 @@
 /* Basic Setup */
+:root {
+    --primary: #4f46e5;
+}
+
 body {
+    font-family: 'Outfit', sans-serif;
+    background-color: #f3f4f6;
     -webkit-font-smoothing: antialiased;
 }
 
-/* Custom Panel Scrollbars */
+/* Dynamic Primary Color */
+.text-primary {
+    color: var(--primary) !important;
+}
+
+.bg-primary {
+    background-color: var(--primary) !important;
+}
+
+.border-primary {
+    border-color: var(--primary) !important;
+}
+
+.focus\:ring-primary:focus {
+    --tw-ring-color: var(--primary) !important;
+}
+
+.focus\:border-primary:focus {
+    border-color: var(--primary) !important;
+}
+
+.hover\:bg-primary:hover {
+    background-color: var(--primary) !important;
+}
+
+/* Custom Scrollbar for Editors */
 .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
     height: 6px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
+    background: #f1f1f1;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 3px;
+    background: #d1d5db;
+    border-radius: 10px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
+    background: #9ca3af;
 }
 
 /* Resume A4 Sizing (Screen) */
@@ -30,18 +61,81 @@ body {
 /* --- TEMPLATE 2: MODERN (Dark Side) --- */
 .template-modern .modern-sidebar {
     background-color: #1e293b;
+    /* Fallback */
     /* Slate 800 */
     color: white;
+    print-color-adjust: exact;
 }
 
 .template-modern .modern-header {
     background: #f8fafc;
-    border-bottom: 4px solid #3b82f6;
+    border-bottom: 44px solid #3b82f6;
     /* Blue 500 */
 }
 
 .template-modern h3 {
     color: #3b82f6;
+}
+
+/* Template 4: Creative */
+.template-creative header {
+    background: linear-gradient(135deg, var(--primary), #818cf8);
+    color: white;
+    padding: 30px;
+    border-radius: 0 0 20px 20px;
+    margin-bottom: 30px;
+}
+
+.template-creative h1 {
+    color: white !important;
+}
+
+.template-creative .section-title {
+    position: relative;
+    padding-left: 15px;
+    color: var(--primary);
+}
+
+.template-creative .section-title::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--primary);
+    border-radius: 4px;
+}
+
+/* Template 5: Academic */
+.template-academic {
+    font-family: 'Georgia', serif;
+    line-height: 1.4;
+}
+
+.template-academic h1 {
+    font-family: 'Arial', sans-serif;
+    text-transform: none;
+}
+
+.template-academic .section-header {
+    border-bottom: 1px solid black;
+    margin-bottom: 10px;
+    padding-bottom: 2px;
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 11pt;
+}
+
+/* Drag & Drop */
+.sortable-ghost {
+    opacity: 0.4;
+    background-color: #f3f4f6;
+    border: 1px dashed var(--primary);
+}
+
+.drag-handle {
+    cursor: move;
 }
 
 /* --- TEMPLATE 3: MINIMALIST (Centered) --- */
