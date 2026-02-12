@@ -27,6 +27,7 @@ let resumeData = {
 };
 
 let activeAiField = null;
+let currentZoom = 100;
 
 // --- Elements ---
 const inputs = document.querySelectorAll('input[data-field], textarea[data-field]');
@@ -48,6 +49,13 @@ document.addEventListener('DOMContentLoaded', () => {
     populateForms();
     renderPreview();
     updateColor(resumeData.color);
+    updateProgress();
+    initPanelResizer();
+    initParticles();
+    initSilkScroll();
+    initRippleEffects();
+    initMagneticHover();
+    initSpringButtons();
 
     // 2. Static Inputs
     inputs.forEach(input => {
@@ -55,6 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const field = e.target.dataset.field;
             resumeData[field] = e.target.value;
             renderPreview();
+            updateProgress();
         });
     });
 
@@ -106,7 +115,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('template-select').addEventListener('change', (e) => {
         resumeData.template = e.target.value;
-        renderPreview();
+        const preview = document.getElementById('resume-preview');
+        preview.classList.add('template-switching');
+        setTimeout(() => {
+            renderPreview();
+            preview.classList.remove('template-switching');
+        }, 250);
+        showToast(`Template: ${e.target.value}`, 'info');
     });
 
     const colorPicker = document.getElementById('color-picker');
@@ -135,9 +150,87 @@ document.addEventListener('DOMContentLoaded', () => {
             e.target.value = '';
             renderSkillsTags();
             renderPreview();
+            updateProgress();
+            showToast(`Skill "${resumeData.skills[resumeData.skills.length - 1]}" added!`, 'success');
         }
     });
     renderSkillsTags();
+
+    // 8. Dark Mode Toggle
+    const themeToggle = document.getElementById('theme-toggle');
+    if (localStorage.getItem('darkMode') === 'true') {
+        document.body.classList.add('dark-mode');
+        themeToggle.classList.add('active');
+        themeToggle.querySelector('i').className = 'fa-solid fa-moon text-indigo-300';
+    }
+    themeToggle.addEventListener('click', () => {
+        if (document.querySelector('.mode-transition-overlay')) return;
+        const goingDark = !document.body.classList.contains('dark-mode');
+
+        // Build overlay with sweep, icon, and particles
+        const overlay = document.createElement('div');
+        overlay.className = 'mode-transition-overlay';
+
+        const sweep = document.createElement('div');
+        sweep.className = `sweep ${goingDark ? 'to-dark' : 'to-light'}`;
+        overlay.appendChild(sweep);
+
+        const icon = document.createElement('div');
+        icon.className = `mode-icon ${goingDark ? 'icon-dark' : 'icon-light'}`;
+        icon.innerHTML = goingDark
+            ? '<i class="fa-solid fa-moon"></i>'
+            : '<i class="fa-solid fa-sun"></i>';
+        overlay.appendChild(icon);
+
+        // Create particle burst
+        const burstColors = goingDark
+            ? ['#818cf8', '#6366f1', '#a78bfa', '#4f46e5', '#c7d2fe']
+            : ['#fbbf24', '#f59e0b', '#fde68a', '#f97316', '#fef3c7'];
+        for (let i = 0; i < 12; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'burst-particle';
+            const angle = (i / 12) * Math.PI * 2;
+            const dist = 60 + Math.random() * 40;
+            particle.style.setProperty('--bx', `${Math.cos(angle) * dist}px`);
+            particle.style.setProperty('--by', `${Math.sin(angle) * dist}px`);
+            particle.style.background = burstColors[i % burstColors.length];
+            particle.style.animationDelay = `${0.1 + Math.random() * 0.15}s`;
+            particle.style.width = `${3 + Math.random() * 4}px`;
+            particle.style.height = particle.style.width;
+            overlay.appendChild(particle);
+        }
+
+        document.body.appendChild(overlay);
+
+        // Phase 1: Sweep in + icon appear
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                overlay.classList.add('active');
+            });
+        });
+
+        // Phase 2: Swap theme behind the sweep
+        setTimeout(() => {
+            document.body.classList.toggle('dark-mode');
+            themeToggle.classList.toggle('active');
+            const isDark = document.body.classList.contains('dark-mode');
+            themeToggle.querySelector('i').className = isDark
+                ? 'fa-solid fa-moon text-indigo-300'
+                : 'fa-solid fa-sun text-amber-500';
+            localStorage.setItem('darkMode', isDark);
+        }, 400);
+
+        // Phase 3: Sweep out to reveal new theme
+        setTimeout(() => {
+            overlay.classList.remove('active');
+            overlay.classList.add('sweep-out');
+        }, 650);
+
+        // Cleanup
+        setTimeout(() => {
+            overlay.remove();
+        }, 1200);
+    });
 });
 
 // --- State Helpers ---
@@ -148,6 +241,251 @@ function updateColor(color) {
 function updateArrayItem(type, index, field, value) {
     resumeData[type][index][field] = value;
     renderPreview();
+    updateProgress();
+}
+
+// --- Progress Tracking ---
+function updateProgress() {
+    const fields = ['name', 'title', 'email', 'phone', 'summary'];
+    let filled = 0;
+    let total = fields.length + 2; // +2 for experience & skills having items
+
+    fields.forEach(f => { if (resumeData[f] && resumeData[f].trim()) filled++; });
+    if (resumeData.experience.length > 0 && resumeData.experience[0].company) filled++;
+    if (resumeData.skills.length > 0) filled++;
+
+    const pct = Math.round((filled / total) * 100);
+    const bar = document.getElementById('progress-bar');
+    const text = document.getElementById('completion-text');
+    if (bar) bar.style.width = pct + '%';
+    if (text) text.textContent = pct + '% complete';
+}
+
+// --- Toast Notifications ---
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle' };
+    toast.innerHTML = `<i class="fa-solid ${icons[type] || icons.info}"></i> ${message}`;
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.style.animation = 'toastOut 0.3s ease both';
+        setTimeout(() => toast.remove(), 300);
+    }, 2500);
+}
+
+// --- Section Toggle ---
+window.toggleSection = function(header) {
+    const section = header.closest('.editor-section');
+    const icon = header.querySelector('.section-collapse-icon');
+    section.classList.toggle('section-collapsed');
+    // Bounce the icon
+    icon.style.transition = 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
+}
+
+// --- Zoom Preview ---
+window.zoomPreview = function(delta) {
+    if (delta === 0) { currentZoom = 100; }
+    else { currentZoom = Math.max(50, Math.min(150, currentZoom + delta)); }
+    const preview = document.getElementById('resume-preview');
+    preview.style.transform = `scale(${currentZoom / 100})`;
+    document.getElementById('zoom-label').textContent = currentZoom + '%';
+}
+
+// --- Floating Particles (smoother) ---
+function initParticles() {
+    const container = document.getElementById('particles');
+    if (!container) return;
+    const colors = ['var(--primary)', '#ec4899', '#8b5cf6', '#3b82f6', '#10b981'];
+    for (let i = 0; i < 14; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        const size = Math.random() * 5 + 2;
+        p.style.width = size + 'px';
+        p.style.height = size + 'px';
+        p.style.left = Math.random() * 100 + '%';
+        p.style.background = colors[Math.floor(Math.random() * colors.length)];
+        p.style.animationDuration = (Math.random() * 25 + 20) + 's';
+        p.style.animationDelay = (Math.random() * 20) + 's';
+        container.appendChild(p);
+    }
+}
+
+// --- Silk Scroll Reveal (blur-to-sharp + stagger) ---
+function initSilkScroll() {
+    const editor = document.getElementById('editor-panel');
+    if (!editor) return;
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                // Stagger siblings that become visible around the same time
+                const delay = entry.target.dataset.silkDelay || 0;
+                setTimeout(() => {
+                    entry.target.classList.add('revealed');
+                }, delay);
+            }
+        });
+    }, { root: editor, threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
+
+    // Watch for dynamically added form cards
+    const mutObs = new MutationObserver(() => {
+        const unrevealed = editor.querySelectorAll('.form-card:not(.revealed):not(.silk-reveal)');
+        unrevealed.forEach((el, i) => {
+            el.classList.add('silk-reveal');
+            el.dataset.silkDelay = i * 60; // stagger
+            observer.observe(el);
+        });
+    });
+    mutObs.observe(editor, { childList: true, subtree: true });
+
+    // Also observe editor sections themselves
+    editor.querySelectorAll('.editor-section').forEach((section, i) => {
+        section.classList.add('silk-reveal');
+        section.dataset.silkDelay = i * 80;
+        observer.observe(section);
+    });
+}
+
+// --- Ripple Effect on Buttons (smoother) ---
+function initRippleEffects() {
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('.btn-add, .btn-primary, .toolbar-btn');
+        if (!btn) return;
+        btn.classList.add('ripple-container');
+        const ripple = document.createElement('span');
+        ripple.className = 'ripple-wave';
+        const rect = btn.getBoundingClientRect();
+        ripple.style.left = (e.clientX - rect.left - 10) + 'px';
+        ripple.style.top = (e.clientY - rect.top - 10) + 'px';
+        btn.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 700);
+    });
+}
+
+// --- Magnetic Hover (elements attracted to cursor) ---
+function initMagneticHover() {
+    const magneticElements = document.querySelectorAll(
+        '.btn-primary, .btn-add, .toolbar-btn, .color-picker-wrapper, .theme-toggle, .section-icon, .zoom-btn'
+    );
+
+    magneticElements.forEach(el => {
+        el.classList.add('magnetic-hover');
+
+        el.addEventListener('mousemove', (e) => {
+            const rect = el.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            const deltaX = e.clientX - centerX;
+            const deltaY = e.clientY - centerY;
+            
+            // Strength depends on element size (smaller = more magnetic)
+            const strength = Math.min(rect.width, rect.height) < 40 ? 0.35 : 0.2;
+            const moveX = deltaX * strength;
+            const moveY = deltaY * strength;
+
+            el.classList.add('attracted');
+            el.style.transform = `translate(${moveX}px, ${moveY}px)`;
+
+            // Move child content slightly more for depth
+            const child = el.querySelector('i, span, .theme-toggle-knob');
+            if (child) {
+                child.style.transition = 'transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                child.style.transform = `translate(${moveX * 0.3}px, ${moveY * 0.3}px)`;
+            }
+        });
+
+        el.addEventListener('mouseleave', () => {
+            el.classList.remove('attracted');
+            el.style.transform = '';
+            const child = el.querySelector('i, span, .theme-toggle-knob');
+            if (child) {
+                child.style.transition = 'transform 0.5s cubic-bezier(0.22, 1, 0.36, 1)';
+                child.style.transform = '';
+            }
+        });
+    });
+
+    // Editor sections: gentle tilt on hover (softer than before)
+    document.querySelectorAll('.editor-section').forEach(section => {
+        section.addEventListener('mousemove', (e) => {
+            const rect = section.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width;
+            const y = (e.clientY - rect.top) / rect.height;
+            const rotateX = (y - 0.5) * -2;
+            const rotateY = (x - 0.5) * 2;
+            section.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-2px)`;
+            section.style.transition = 'transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        });
+        section.addEventListener('mouseleave', () => {
+            section.style.transform = '';
+            section.style.transition = 'transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        });
+    });
+}
+
+// --- Spring Physics for Button Interactions ---
+function initSpringButtons() {
+    // Add elastic press feedback via CSS class to avoid fighting inline transforms
+    const style = document.createElement('style');
+    style.textContent = `
+        .spring-pressed { transform: scale(0.92) !important; transition: transform 0.08s ease !important; }
+        .spring-release { transition: transform 0.5s var(--spring-bounce) !important; }
+    `;
+    document.head.appendChild(style);
+
+    const buttons = document.querySelectorAll('.btn-add, .btn-primary, .toolbar-btn, .zoom-btn');
+    buttons.forEach(btn => {
+        btn.addEventListener('mousedown', () => {
+            btn.classList.remove('spring-release');
+            btn.classList.add('spring-pressed');
+        });
+        const release = () => {
+            btn.classList.remove('spring-pressed');
+            btn.classList.add('spring-release');
+            setTimeout(() => btn.classList.remove('spring-release'), 500);
+        };
+        btn.addEventListener('mouseup', release);
+        btn.addEventListener('mouseleave', () => {
+            if (btn.classList.contains('spring-pressed')) release();
+        });
+    });
+}
+
+// --- Panel Resizer ---
+function initPanelResizer() {
+    const resizer = document.getElementById('panel-resizer');
+    const editor = document.getElementById('editor-panel');
+    if (!resizer || !editor) return;
+    let isResizing = false;
+
+    resizer.addEventListener('mousedown', (e) => {
+        isResizing = true;
+        resizer.classList.add('active');
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+        e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isResizing) return;
+        const main = editor.parentElement;
+        const mainRect = main.getBoundingClientRect();
+        const pct = ((e.clientX - mainRect.left) / mainRect.width) * 100;
+        const clamped = Math.max(25, Math.min(60, pct));
+        editor.style.width = clamped + '%';
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (isResizing) {
+            isResizing = false;
+            resizer.classList.remove('active');
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+        }
+    });
 }
 
 function scrapeExperienceItem(div) {
@@ -177,6 +515,7 @@ function exportJSON() {
     document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
+    showToast('Resume backup exported!', 'success');
 }
 
 function importJSON(e) {
@@ -193,9 +532,9 @@ function importJSON(e) {
             updateColor(resumeData.color || '#4f46e5');
             document.getElementById('color-picker').value = resumeData.color || '#4f46e5';
             document.getElementById('template-select').value = resumeData.template || 'professional';
-            alert("Resume Loaded Successfully!");
+            showToast('Resume loaded successfully!', 'success');
         } catch (err) {
-            alert("Error parsing JSON: " + err);
+            showToast('Error parsing JSON: ' + err, 'error');
         }
     };
     reader.readAsText(file);
@@ -226,33 +565,33 @@ function addExperienceItem(data = null, index = null) {
     }
 
     const div = document.createElement('div');
-    div.className = 'experience-item bg-gray-50 border border-gray-200 rounded-lg p-4 relative group hover:border-primary/50 transition-colors mb-4';
+    div.className = 'experience-item form-card form-card-enter p-5 relative group mb-4';
     div.dataset.index = index;
     div.innerHTML = `
-        <div class="absolute top-2 right-2 flex gap-2">
-            <button class="text-gray-400 hover:text-primary drag-handle cursor-move"><i class="fa-solid fa-grip-vertical"></i></button>
-            <button class="text-gray-400 hover:text-red-500" onclick="removeExperience(${index})"><i class="fa-solid fa-trash"></i></button>
+        <div class="absolute top-3 right-3 flex gap-1.5">
+            <button class="text-gray-400 hover:text-primary drag-handle cursor-move w-7 h-7 flex items-center justify-center rounded-md hover:bg-gray-100 transition-all"><i class="fa-solid fa-grip-vertical text-xs"></i></button>
+            <button class="delete-btn text-gray-400 hover:text-red-500 w-7 h-7 flex items-center justify-center rounded-md hover:bg-red-50 transition-all" onclick="removeExperience(${index})"><i class="fa-solid fa-trash text-xs"></i></button>
         </div>
         <div class="grid grid-cols-2 gap-3 mb-3 pr-16">
-            <input type="text" placeholder="Company" class="w-full bg-white border border-gray-300 rounded px-2 py-1 text-sm focus:border-primary outline-none" 
+            <input type="text" placeholder="Company" class="input-interactive w-full bg-white rounded-lg px-3 py-2 text-sm outline-none" 
                    value="${data.company}" oninput="updateArrayItem('experience', ${index}, 'company', this.value)">
-            <input type="text" placeholder="Role" class="w-full bg-white border border-gray-300 rounded px-2 py-1 text-sm focus:border-primary outline-none" 
+            <input type="text" placeholder="Role" class="input-interactive w-full bg-white rounded-lg px-3 py-2 text-sm outline-none" 
                    value="${data.role}" oninput="updateArrayItem('experience', ${index}, 'role', this.value)">
         </div>
         <div class="grid grid-cols-2 gap-3 mb-3">
-            <input type="text" placeholder="Start Date" class="w-full bg-white border border-gray-300 rounded px-2 py-1 text-sm focus:border-primary outline-none" 
+            <input type="text" placeholder="Start Date" class="input-interactive w-full bg-white rounded-lg px-3 py-2 text-sm outline-none" 
                    value="${data.start}" oninput="updateArrayItem('experience', ${index}, 'start', this.value)">
-            <input type="text" placeholder="End Date" class="w-full bg-white border border-gray-300 rounded px-2 py-1 text-sm focus:border-primary outline-none" 
+            <input type="text" placeholder="End Date" class="input-interactive w-full bg-white rounded-lg px-3 py-2 text-sm outline-none" 
                    value="${data.end}" oninput="updateArrayItem('experience', ${index}, 'end', this.value)">
         </div>
         <div>
-             <label class="block text-xs font-medium text-gray-500 mb-1 flex justify-between">
+             <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 flex justify-between items-center">
                 Description
-                <button class="text-xs text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 px-3 py-1 rounded-full font-medium flex items-center gap-1 shadow-md transition-all transform hover:scale-105" onclick="openAiModal('experience', ${index})">
+                <button class="ai-btn-glow text-xs text-white bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 px-3 py-1.5 rounded-full font-semibold flex items-center gap-1.5 shadow-md transition-all transform hover:scale-105 normal-case tracking-normal" onclick="openAiModal('experience', ${index})">
                     <i class="fa-solid fa-wand-magic-sparkles"></i> AI Write
                 </button>
             </label>
-            <textarea placeholder="Did amazing things..." class="w-full bg-white border border-gray-300 rounded px-2 py-1 text-sm focus:border-primary outline-none resize-none h-16"
+            <textarea placeholder="Describe your achievements..." class="input-interactive w-full bg-white rounded-lg px-3 py-2 text-sm outline-none resize-none h-16"
                   oninput="updateArrayItem('experience', ${index}, 'desc', this.value)">${data.desc}</textarea>
         </div>
     `;
@@ -268,21 +607,21 @@ function addEducationItem(data = null, index = null) {
     }
 
     const div = document.createElement('div');
-    div.className = 'education-item bg-gray-50 border border-gray-200 rounded-lg p-4 relative group hover:border-primary/50 transition-colors mb-4';
+    div.className = 'education-item form-card form-card-enter p-5 relative group mb-4';
     div.dataset.index = index;
     div.innerHTML = `
-        <div class="absolute top-2 right-2 flex gap-2">
-            <button class="text-gray-400 hover:text-primary drag-handle cursor-move"><i class="fa-solid fa-grip-vertical"></i></button>
-            <button class="text-gray-400 hover:text-red-500" onclick="removeEducation(${index})"><i class="fa-solid fa-trash"></i></button>
+        <div class="absolute top-3 right-3 flex gap-1.5">
+            <button class="text-gray-400 hover:text-primary drag-handle cursor-move w-7 h-7 flex items-center justify-center rounded-md hover:bg-gray-100 transition-all"><i class="fa-solid fa-grip-vertical text-xs"></i></button>
+            <button class="delete-btn text-gray-400 hover:text-red-500 w-7 h-7 flex items-center justify-center rounded-md hover:bg-red-50 transition-all" onclick="removeEducation(${index})"><i class="fa-solid fa-trash text-xs"></i></button>
         </div>
         <div class="grid grid-cols-1 gap-3 mb-3 pr-16">
-             <input type="text" placeholder="School" class="w-full bg-white border border-gray-300 rounded px-2 py-1 text-sm focus:border-primary outline-none" 
+             <input type="text" placeholder="School" class="input-interactive w-full bg-white rounded-lg px-3 py-2 text-sm outline-none" 
                    value="${data.school}" oninput="updateArrayItem('education', ${index}, 'school', this.value)">
         </div>
         <div class="grid grid-cols-2 gap-3">
-             <input type="text" placeholder="Degree" class="w-full bg-white border border-gray-300 rounded px-2 py-1 text-sm focus:border-primary outline-none" 
+             <input type="text" placeholder="Degree" class="input-interactive w-full bg-white rounded-lg px-3 py-2 text-sm outline-none" 
                    value="${data.degree}" oninput="updateArrayItem('education', ${index}, 'degree', this.value)">
-             <input type="text" placeholder="Year" class="w-full bg-white border border-gray-300 rounded px-2 py-1 text-sm focus:border-primary outline-none" 
+             <input type="text" placeholder="Year" class="input-interactive w-full bg-white rounded-lg px-3 py-2 text-sm outline-none" 
                    value="${data.year}" oninput="updateArrayItem('education', ${index}, 'year', this.value)">
         </div>
     `;
@@ -290,15 +629,41 @@ function addEducationItem(data = null, index = null) {
 }
 
 window.removeExperience = function (index) {
-    resumeData.experience.splice(index, 1);
-    populateForms();
-    renderPreview();
+    const items = experienceContainer.querySelectorAll('.experience-item');
+    const target = items[index];
+    if (target) {
+        target.classList.add('form-card-exit');
+        setTimeout(() => {
+            resumeData.experience.splice(index, 1);
+            populateForms();
+            renderPreview();
+            updateProgress();
+        }, 350);
+    } else {
+        resumeData.experience.splice(index, 1);
+        populateForms();
+        renderPreview();
+        updateProgress();
+    }
 };
 
 window.removeEducation = function (index) {
-    resumeData.education.splice(index, 1);
-    populateForms();
-    renderPreview();
+    const items = educationContainer.querySelectorAll('.education-item');
+    const target = items[index];
+    if (target) {
+        target.classList.add('form-card-exit');
+        setTimeout(() => {
+            resumeData.education.splice(index, 1);
+            populateForms();
+            renderPreview();
+            updateProgress();
+        }, 350);
+    } else {
+        resumeData.education.splice(index, 1);
+        populateForms();
+        renderPreview();
+        updateProgress();
+    }
 };
 
 window.removeSkill = function (index) {
@@ -313,10 +678,12 @@ function renderSkillsTags() {
 
     resumeData.skills.forEach((skill, i) => {
         const tag = document.createElement('span');
-        tag.className = 'skill-tag bg-white border border-gray-300 rounded-full px-3 py-1 text-xs font-medium text-gray-700 flex items-center gap-2';
+        tag.className = 'skill-tag bg-white border border-gray-200 rounded-full px-3 py-1.5 text-xs font-semibold text-gray-600 flex items-center gap-2 shadow-sm';
+        tag.style.animationDelay = (i * 40) + 'ms';
         tag.innerHTML = `
+            <i class="fa-solid fa-code text-primary text-[9px] opacity-60"></i>
             ${skill}
-            <button class="text-gray-400 hover:text-red-500" onclick="removeSkill(${i})"><i class="fa-solid fa-xmark"></i></button>
+            <button class="text-gray-300 hover:text-red-500 transition-colors" onclick="removeSkill(${i})"><i class="fa-solid fa-xmark text-[10px]"></i></button>
         `;
         skillsContainer.insertBefore(tag, skillsInput);
     });
@@ -599,7 +966,12 @@ window.openAiModal = function (type, index) {
     document.getElementById('ai-keywords').value = '';
 }
 
-const INTEGRATED_API_KEY = "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";
+// OpenRouter API Key
+const OPENROUTER_API_KEY = "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";
+
+async function getApiKey() {
+    return OPENROUTER_API_KEY;
+}
 
 async function runAiGeneration() {
     if (!activeAiField) return;
@@ -621,7 +993,7 @@ async function runAiGeneration() {
         closeModal('ai-modal');
     } catch (error) {
         console.error("AI Error:", error);
-        alert("AI Generation Failed. Switching to Smart Mock.\nError: " + error.message);
+        showToast('AI generation failed, using fallback.', 'error');
         // Fallback
         const mockText = generateSmartMock(activeAiField.type, tone, keywords);
         updateFieldWithAI(mockText);
@@ -646,16 +1018,17 @@ function updateFieldWithAI(text) {
 }
 
 async function fetchOpenRouter(prompt) {
+    const apiKey = await getApiKey();
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${INTEGRATED_API_KEY}`,
+            'Authorization': `Bearer ${apiKey}`,
             'HTTP-Referer': window.location.href, // Required by OpenRouter for free tier rankings
             'X-Title': 'Resume Builder App'
         },
         body: JSON.stringify({
-            model: "google/gemini-2.0-flash-lite-preview-02-05:free", // Using a quality free model on OpenRouter
+            model: "google/gemini-2.5-flash-lite",
             messages: [{ role: "user", content: prompt }],
             temperature: 0.7,
             max_tokens: 300
