@@ -56,6 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initRippleEffects();
     initMagneticHover();
     initSpringButtons();
+    initMobileUI();
 
     // 2. Static Inputs
     inputs.forEach(input => {
@@ -259,6 +260,11 @@ function updateProgress() {
     const text = document.getElementById('completion-text');
     if (bar) bar.style.width = pct + '%';
     if (text) text.textContent = pct + '% complete';
+    // Mobile progress
+    const barMobile = document.getElementById('progress-bar-mobile');
+    const textMobile = document.getElementById('completion-text-mobile');
+    if (barMobile) barMobile.style.width = pct + '%';
+    if (textMobile) textMobile.textContent = pct + '% complete';
 }
 
 // --- Toast Notifications ---
@@ -452,6 +458,129 @@ function initSpringButtons() {
             if (btn.classList.contains('spring-pressed')) release();
         });
     });
+}
+
+// --- Mobile UI ---
+function initMobileUI() {
+    const isMobile = () => window.innerWidth < 768;
+
+    // Tab Switcher
+    const tabEditor = document.getElementById('tab-editor');
+    const tabPreview = document.getElementById('tab-preview');
+    const editorPanel = document.getElementById('editor-panel');
+    const previewSection = document.getElementById('preview-section');
+
+    function switchTab(tab) {
+        if (tab === 'editor') {
+            editorPanel.classList.add('mobile-panel-active');
+            editorPanel.classList.remove('mobile-panel-hidden');
+            previewSection.classList.add('mobile-panel-hidden');
+            previewSection.classList.remove('mobile-panel-active');
+            tabEditor.classList.add('active');
+            tabPreview.classList.remove('active');
+        } else {
+            previewSection.classList.add('mobile-panel-active');
+            previewSection.classList.remove('mobile-panel-hidden');
+            previewSection.style.display = 'flex';
+            editorPanel.classList.add('mobile-panel-hidden');
+            editorPanel.classList.remove('mobile-panel-active');
+            tabPreview.classList.add('active');
+            tabEditor.classList.remove('active');
+            // Re-render to make sure preview is up to date
+            renderPreview();
+        }
+    }
+
+    if (tabEditor) tabEditor.addEventListener('click', () => switchTab('editor'));
+    if (tabPreview) tabPreview.addEventListener('click', () => switchTab('preview'));
+
+    // Initialize mobile state
+    if (isMobile()) {
+        switchTab('editor');
+    }
+
+    // On resize, reset panel visibility
+    window.addEventListener('resize', () => {
+        if (!isMobile()) {
+            editorPanel.classList.remove('mobile-panel-hidden');
+            editorPanel.classList.add('mobile-panel-active');
+            previewSection.classList.remove('mobile-panel-hidden');
+            previewSection.style.display = '';
+        }
+    });
+
+    // Mobile Menu
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    if (mobileMenuBtn && mobileMenu) {
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        // Close on backdrop click
+        mobileMenu.addEventListener('click', (e) => {
+            if (e.target === mobileMenu) {
+                mobileMenu.classList.add('hidden');
+            }
+        });
+    }
+
+    // Sync mobile template select with desktop
+    const templateMobile = document.getElementById('template-select-mobile');
+    const templateDesktop = document.getElementById('template-select');
+    if (templateMobile && templateDesktop) {
+        templateMobile.value = templateDesktop.value;
+        templateMobile.addEventListener('change', (e) => {
+            templateDesktop.value = e.target.value;
+            templateDesktop.dispatchEvent(new Event('change'));
+        });
+    }
+
+    // Sync mobile color picker with desktop
+    const colorMobile = document.getElementById('color-picker-mobile');
+    const colorDesktop = document.getElementById('color-picker');
+    if (colorMobile && colorDesktop) {
+        colorMobile.value = colorDesktop.value;
+        colorMobile.addEventListener('input', (e) => {
+            colorDesktop.value = e.target.value;
+            resumeData.color = e.target.value;
+            updateColor(e.target.value);
+        });
+    }
+
+    // Mobile PDF button
+    const pdfMobile = document.getElementById('download-pdf-mobile');
+    if (pdfMobile) {
+        pdfMobile.addEventListener('click', () => window.print());
+    }
+
+    // Mobile export/import
+    const exportMobile = document.getElementById('export-json-mobile');
+    if (exportMobile) exportMobile.addEventListener('click', exportJSON);
+    const importMobile = document.getElementById('import-json-mobile');
+    if (importMobile) importMobile.addEventListener('change', importJSON);
+
+    // Mobile dark mode toggle (sync with desktop)
+    const themeToggleMobile = document.getElementById('theme-toggle-mobile');
+    const themeToggleDesktop = document.getElementById('theme-toggle');
+    if (themeToggleMobile) {
+        // Sync initial state
+        if (document.body.classList.contains('dark-mode')) {
+            themeToggleMobile.classList.add('active');
+            themeToggleMobile.querySelector('i').className = 'fa-solid fa-moon text-indigo-300';
+        }
+        themeToggleMobile.addEventListener('click', () => {
+            // Trigger the desktop toggle click which handles the full transition
+            themeToggleDesktop.click();
+            // Sync mobile toggle UI after transition
+            setTimeout(() => {
+                const isDark = document.body.classList.contains('dark-mode');
+                themeToggleMobile.classList.toggle('active', isDark);
+                themeToggleMobile.querySelector('i').className = isDark
+                    ? 'fa-solid fa-moon text-indigo-300'
+                    : 'fa-solid fa-sun text-amber-500';
+            }, 500);
+        });
+    }
 }
 
 // --- Panel Resizer ---
