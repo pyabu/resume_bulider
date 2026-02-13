@@ -1096,11 +1096,50 @@ window.openAiModal = function (type, index) {
     document.getElementById('ai-keywords').value = '';
 }
 
-// OpenRouter API Key
-const OPENROUTER_API_KEY = "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";
+// OpenRouter API Key — loaded from config.js (gitignored) or localStorage
+function getApiKey() {
+    // 1. Check localStorage (user-entered key takes priority)
+    const localKey = localStorage.getItem('openrouter_api_key');
+    if (localKey) return localKey;
 
-async function getApiKey() {
-    return OPENROUTER_API_KEY;
+    // 2. Check config.js ENV (gitignored file, acts like .env)
+    if (typeof ENV !== 'undefined' && ENV.OPENROUTER_API_KEY) {
+        return ENV.OPENROUTER_API_KEY;
+    }
+
+    // 3. No key found — prompt user
+    openApiKeyModal();
+    throw new Error('API key not set. Please add it to config.js or enter it in the settings.');
+}
+
+function openApiKeyModal() {
+    const input = document.getElementById('api-key-input');
+    const saved = localStorage.getItem('openrouter_api_key');
+    if (saved) input.value = saved;
+    document.getElementById('api-key-modal').classList.remove('hidden');
+}
+
+function saveApiKey() {
+    const key = document.getElementById('api-key-input').value.trim();
+    if (!key) {
+        showToast('Please enter a valid API key.', 'error');
+        return;
+    }
+    localStorage.setItem('openrouter_api_key', key);
+    closeModal('api-key-modal');
+    showToast('API key saved securely in your browser!', 'success');
+}
+
+function toggleApiKeyVisibility() {
+    const input = document.getElementById('api-key-input');
+    const icon = document.getElementById('api-key-eye');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+    }
 }
 
 async function runAiGeneration() {
@@ -1148,7 +1187,7 @@ function updateFieldWithAI(text) {
 }
 
 async function fetchOpenRouter(prompt) {
-    const apiKey = await getApiKey();
+    const apiKey = getApiKey();
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
         headers: {
