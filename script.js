@@ -1153,9 +1153,17 @@ function updateFieldWithAI(text) {
 async function fetchOpenRouter(prompt) {
     let response;
     try {
+        const headers = { 'Content-Type': 'application/json' };
+
+        // Include API token if configured (set window.API_TOKEN or read from meta tag)
+        const apiToken = window.__API_TOKEN || '';
+        if (apiToken) {
+            headers['x-api-token'] = apiToken;
+        }
+
         response = await fetch('/api/generate', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers,
             body: JSON.stringify({ prompt, temperature: 0.7, max_tokens: 300 })
         });
     } catch (networkErr) {
