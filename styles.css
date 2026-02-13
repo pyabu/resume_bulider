@@ -2585,3 +2585,79 @@ body.dark-mode .kbd-hint {
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
+
+/* ===== ICON-PREFIXED INPUTS ===== */
+.relative .input-interactive {
+    transition: all 0.3s var(--transition);
+}
+
+.relative .input-interactive:focus ~ i,
+.relative .input-interactive:focus + i,
+.relative:has(.input-interactive:focus) > i {
+    color: var(--primary) !important;
+    transform: translateY(-50%) scale(1.15);
+    transition: all 0.3s var(--bounce);
+}
+
+.relative > i {
+    transition: all 0.3s var(--transition);
+    pointer-events: none;
+}
+
+/* Input icon subtle background glow on focus */
+.relative:has(.input-interactive:focus)::after {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: var(--primary-glow);
+    pointer-events: none;
+    animation: iconGlowIn 0.3s var(--bounce) both;
+    z-index: 0;
+}
+
+@keyframes iconGlowIn {
+    0% { transform: translateY(-50%) scale(0); opacity: 0; }
+    100% { transform: translateY(-50%) scale(1); opacity: 1; }
+}
+
+/* Dark mode icon inputs */
+body.dark-mode .relative > i {
+    color: #4a5568 !important;
+}
+
+body.dark-mode .relative:has(.input-interactive:focus) > i {
+    color: var(--primary-light) !important;
+}
+
+body.dark-mode .relative:has(.input-interactive:focus)::after {
+    background: rgba(99, 102, 241, 0.1);
+}
+
+/* ===== ENHANCED LABEL ICONS ===== */
+label i.text-primary\/50 {
+    transition: all 0.3s var(--transition);
+}
+
+label:has(+ .relative .input-interactive:focus) i.text-primary\/50,
+label:has(+ div .input-interactive:focus) i.text-primary\/50 {
+    color: var(--primary) !important;
+    transform: scale(1.1);
+}
+
+/* ===== SKILLS CONTAINER ENHANCED ===== */
+.skills-container {
+    background-image: linear-gradient(135deg, rgba(99, 102, 241, 0.01) 0%, rgba(139, 92, 246, 0.02) 100%);
+}
+
+.skills-container:focus-within {
+    background-image: linear-gradient(135deg, rgba(99, 102, 241, 0.03) 0%, rgba(139, 92, 246, 0.04) 100%);
+}
+
+body.dark-mode .skills-container {
+    background-image: none !important;
+}

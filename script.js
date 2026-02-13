@@ -1,27 +1,39 @@
 // --- State ---
 let resumeData = {
-    name: "John Doe",
-    title: "StartUp Founder",
-    email: "john@startup.io",
-    phone: "+1 (555) 000-1234",
-    summary: "Visionary entrepreneur with a track record of building scalable web applications. Passionate about AI-driven solutions and user-centric design.",
+    name: "Abu Saleem",
+    title: "Full Stack Developer",
+    email: "abu@devstudio.io",
+    phone: "+1 (555) 987-6543",
+    summary: "Creative and results-driven Full Stack Developer with 4+ years of experience building high-performance web applications. Skilled in modern JavaScript frameworks, cloud architecture, and AI integration. Passionate about clean code, intuitive UX, and shipping products that make a difference.",
     experience: [
         {
-            company: "TechNova",
-            role: "Senior Developer",
-            start: "2022",
+            company: "NovaTech Solutions",
+            role: "Senior Full Stack Developer",
+            start: "Jan 2024",
             end: "Present",
-            desc: "Led a team of 5 engineers to refactor the core platform, improving latency by 30%."
+            desc: "Architected and deployed a microservices-based SaaS platform serving 50K+ users. Reduced API response times by 40% through caching strategies and database optimization. Mentored a team of 4 junior developers."
+        },
+        {
+            company: "CloudSync Inc.",
+            role: "Frontend Engineer",
+            start: "Jun 2022",
+            end: "Dec 2023",
+            desc: "Built responsive dashboards and data visualization tools using React and D3.js. Implemented CI/CD pipelines reducing deployment time by 60%. Collaborated with design team on a complete UI overhaul."
         }
     ],
     education: [
         {
-            school: "University of Tech",
-            degree: "Computer Science",
-            year: "2021"
+            school: "Stanford University",
+            degree: "B.S. Computer Science",
+            year: "2022"
+        },
+        {
+            school: "MIT OpenCourseWare",
+            degree: "Machine Learning Certificate",
+            year: "2023"
         }
     ],
-    skills: ["JavaScript", "React", "Node.js", "System Design", "Leadership"],
+    skills: ["JavaScript", "TypeScript", "React", "Next.js", "Node.js", "Python", "PostgreSQL", "AWS", "Docker", "Figma"],
     template: "professional",
     color: "#6366f1"
 };
@@ -628,20 +640,22 @@ function initPanelResizer() {
 }
 
 function scrapeExperienceItem(div) {
+    const inputs = div.querySelectorAll('input');
     return {
-        company: div.querySelector('input[placeholder="Company"]').value,
-        role: div.querySelector('input[placeholder="Role"]').value,
-        start: div.querySelector('input[placeholder="Start Date"]').value,
-        end: div.querySelector('input[placeholder="End Date"]').value,
-        desc: div.querySelector('textarea').value
+        company: inputs[0]?.value || '',
+        role: inputs[1]?.value || '',
+        start: inputs[2]?.value || '',
+        end: inputs[3]?.value || '',
+        desc: div.querySelector('textarea')?.value || ''
     };
 }
 
 function scrapeEducationItem(div) {
+    const inputs = div.querySelectorAll('input');
     return {
-        school: div.querySelector('input[placeholder="School"]').value,
-        degree: div.querySelector('input[placeholder="Degree"]').value,
-        year: div.querySelector('input[placeholder="Year"]').value
+        school: inputs[0]?.value || '',
+        degree: inputs[1]?.value || '',
+        year: inputs[2]?.value || ''
     };
 }
 
@@ -708,29 +722,41 @@ function addExperienceItem(data = null, index = null) {
     div.dataset.index = index;
     div.innerHTML = `
         <div class="absolute top-3 right-3 flex gap-1.5">
-            <button class="text-gray-400 hover:text-primary drag-handle cursor-move w-7 h-7 flex items-center justify-center rounded-md hover:bg-gray-100 transition-all"><i class="fa-solid fa-grip-vertical text-xs"></i></button>
-            <button class="delete-btn text-gray-400 hover:text-red-500 w-7 h-7 flex items-center justify-center rounded-md hover:bg-red-50 transition-all" onclick="removeExperience(${index})"><i class="fa-solid fa-trash text-xs"></i></button>
+            <button class="text-gray-400 hover:text-primary drag-handle cursor-move w-7 h-7 flex items-center justify-center rounded-md hover:bg-gray-100 transition-all" title="Drag to reorder"><i class="fa-solid fa-grip-vertical text-xs"></i></button>
+            <button class="delete-btn text-gray-400 hover:text-red-500 w-7 h-7 flex items-center justify-center rounded-md hover:bg-red-50 transition-all" onclick="removeExperience(${index})" title="Remove"><i class="fa-solid fa-trash text-xs"></i></button>
         </div>
         <div class="grid grid-cols-2 gap-3 mb-3 pr-16">
-            <input type="text" placeholder="Company" class="input-interactive w-full bg-white rounded-lg px-3 py-2 text-sm outline-none" 
-                   value="${data.company}" oninput="updateArrayItem('experience', ${index}, 'company', this.value)">
-            <input type="text" placeholder="Role" class="input-interactive w-full bg-white rounded-lg px-3 py-2 text-sm outline-none" 
-                   value="${data.role}" oninput="updateArrayItem('experience', ${index}, 'role', this.value)">
+            <div class="relative">
+                <i class="fa-solid fa-building absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 text-xs"></i>
+                <input type="text" placeholder="e.g. NovaTech Solutions" class="input-interactive w-full bg-white rounded-lg pl-8 pr-3 py-2 text-sm outline-none" 
+                       value="${data.company}" oninput="updateArrayItem('experience', ${index}, 'company', this.value)">
+            </div>
+            <div class="relative">
+                <i class="fa-solid fa-user-tie absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 text-xs"></i>
+                <input type="text" placeholder="e.g. Senior Developer" class="input-interactive w-full bg-white rounded-lg pl-8 pr-3 py-2 text-sm outline-none" 
+                       value="${data.role}" oninput="updateArrayItem('experience', ${index}, 'role', this.value)">
+            </div>
         </div>
         <div class="grid grid-cols-2 gap-3 mb-3">
-            <input type="text" placeholder="Start Date" class="input-interactive w-full bg-white rounded-lg px-3 py-2 text-sm outline-none" 
-                   value="${data.start}" oninput="updateArrayItem('experience', ${index}, 'start', this.value)">
-            <input type="text" placeholder="End Date" class="input-interactive w-full bg-white rounded-lg px-3 py-2 text-sm outline-none" 
-                   value="${data.end}" oninput="updateArrayItem('experience', ${index}, 'end', this.value)">
+            <div class="relative">
+                <i class="fa-solid fa-calendar-plus absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 text-xs"></i>
+                <input type="text" placeholder="e.g. Jan 2024" class="input-interactive w-full bg-white rounded-lg pl-8 pr-3 py-2 text-sm outline-none" 
+                       value="${data.start}" oninput="updateArrayItem('experience', ${index}, 'start', this.value)">
+            </div>
+            <div class="relative">
+                <i class="fa-solid fa-calendar-check absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 text-xs"></i>
+                <input type="text" placeholder="e.g. Present" class="input-interactive w-full bg-white rounded-lg pl-8 pr-3 py-2 text-sm outline-none" 
+                       value="${data.end}" oninput="updateArrayItem('experience', ${index}, 'end', this.value)">
+            </div>
         </div>
         <div>
              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 flex justify-between items-center">
-                Description
+                <span><i class="fa-solid fa-align-left text-primary/50 mr-1"></i> Description</span>
                 <button class="ai-btn-glow text-xs text-white bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 px-3 py-1.5 rounded-full font-semibold flex items-center gap-1.5 shadow-md transition-all transform hover:scale-105 normal-case tracking-normal" onclick="openAiModal('experience', ${index})">
                     <i class="fa-solid fa-wand-magic-sparkles"></i> AI Write
                 </button>
             </label>
-            <textarea placeholder="Describe your achievements..." class="input-interactive w-full bg-white rounded-lg px-3 py-2 text-sm outline-none resize-none h-16"
+            <textarea placeholder="e.g. Architected a microservices platform serving 50K+ users..." class="input-interactive w-full bg-white rounded-lg px-3 py-2 text-sm outline-none resize-none h-16"
                   oninput="updateArrayItem('experience', ${index}, 'desc', this.value)">${data.desc}</textarea>
         </div>
     `;
@@ -750,18 +776,27 @@ function addEducationItem(data = null, index = null) {
     div.dataset.index = index;
     div.innerHTML = `
         <div class="absolute top-3 right-3 flex gap-1.5">
-            <button class="text-gray-400 hover:text-primary drag-handle cursor-move w-7 h-7 flex items-center justify-center rounded-md hover:bg-gray-100 transition-all"><i class="fa-solid fa-grip-vertical text-xs"></i></button>
-            <button class="delete-btn text-gray-400 hover:text-red-500 w-7 h-7 flex items-center justify-center rounded-md hover:bg-red-50 transition-all" onclick="removeEducation(${index})"><i class="fa-solid fa-trash text-xs"></i></button>
+            <button class="text-gray-400 hover:text-primary drag-handle cursor-move w-7 h-7 flex items-center justify-center rounded-md hover:bg-gray-100 transition-all" title="Drag to reorder"><i class="fa-solid fa-grip-vertical text-xs"></i></button>
+            <button class="delete-btn text-gray-400 hover:text-red-500 w-7 h-7 flex items-center justify-center rounded-md hover:bg-red-50 transition-all" onclick="removeEducation(${index})" title="Remove"><i class="fa-solid fa-trash text-xs"></i></button>
         </div>
         <div class="grid grid-cols-1 gap-3 mb-3 pr-16">
-             <input type="text" placeholder="School" class="input-interactive w-full bg-white rounded-lg px-3 py-2 text-sm outline-none" 
-                   value="${data.school}" oninput="updateArrayItem('education', ${index}, 'school', this.value)">
+            <div class="relative">
+                <i class="fa-solid fa-school absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 text-xs"></i>
+                <input type="text" placeholder="e.g. Stanford University" class="input-interactive w-full bg-white rounded-lg pl-8 pr-3 py-2 text-sm outline-none" 
+                       value="${data.school}" oninput="updateArrayItem('education', ${index}, 'school', this.value)">
+            </div>
         </div>
         <div class="grid grid-cols-2 gap-3">
-             <input type="text" placeholder="Degree" class="input-interactive w-full bg-white rounded-lg px-3 py-2 text-sm outline-none" 
-                   value="${data.degree}" oninput="updateArrayItem('education', ${index}, 'degree', this.value)">
-             <input type="text" placeholder="Year" class="input-interactive w-full bg-white rounded-lg px-3 py-2 text-sm outline-none" 
-                   value="${data.year}" oninput="updateArrayItem('education', ${index}, 'year', this.value)">
+            <div class="relative">
+                <i class="fa-solid fa-scroll absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 text-xs"></i>
+                <input type="text" placeholder="e.g. B.S. Computer Science" class="input-interactive w-full bg-white rounded-lg pl-8 pr-3 py-2 text-sm outline-none" 
+                       value="${data.degree}" oninput="updateArrayItem('education', ${index}, 'degree', this.value)">
+            </div>
+            <div class="relative">
+                <i class="fa-solid fa-calendar absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 text-xs"></i>
+                <input type="text" placeholder="e.g. 2022" class="input-interactive w-full bg-white rounded-lg pl-8 pr-3 py-2 text-sm outline-none" 
+                       value="${data.year}" oninput="updateArrayItem('education', ${index}, 'year', this.value)">
+            </div>
         </div>
     `;
     educationContainer.appendChild(div);
