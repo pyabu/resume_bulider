@@ -1212,3 +1212,233 @@ function generateSmartMock(type, tone, keywords) {
     else text += ` Also, ${mockPhrases.achievements[0]}`;
     return text;
 }
+
+// ============================================================
+// ENHANCED INTERACTIVE FEATURES
+// ============================================================
+
+// --- Cursor Glow Follower ---
+function initCursorGlow() {
+    if (window.matchMedia('(max-width: 767px)').matches) return;
+    const glow = document.createElement('div');
+    glow.className = 'cursor-glow';
+    document.body.appendChild(glow);
+
+    let mouseX = 0, mouseY = 0, glowX = 0, glowY = 0;
+    let ticking = false;
+
+    document.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        glow.classList.add('visible');
+        if (!ticking) {
+            ticking = true;
+            requestAnimationFrame(updateGlow);
+        }
+    });
+
+    document.addEventListener('mouseleave', () => glow.classList.remove('visible'));
+
+    function updateGlow() {
+        glowX += (mouseX - glowX) * 0.15;
+        glowY += (mouseY - glowY) * 0.15;
+        glow.style.left = glowX + 'px';
+        glow.style.top = glowY + 'px';
+        if (Math.abs(mouseX - glowX) > 0.5 || Math.abs(mouseY - glowY) > 0.5) {
+            requestAnimationFrame(updateGlow);
+        } else {
+            ticking = false;
+        }
+    }
+}
+
+// --- Card Spotlight Effect (follows cursor within cards) ---
+function initCardSpotlight() {
+    document.querySelectorAll('.editor-section').forEach(section => {
+        section.addEventListener('mousemove', (e) => {
+            const rect = section.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            section.style.setProperty('--spotlight-x', x + 'px');
+            section.style.setProperty('--spotlight-y', y + 'px');
+        });
+    });
+}
+
+// --- Active Section Tracking ---
+function initActiveSectionTracking() {
+    const editor = document.getElementById('editor-panel');
+    if (!editor) return;
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && entry.intersectionRatio > 0.3) {
+                document.querySelectorAll('.editor-section.section-active').forEach(s => s.classList.remove('section-active'));
+                entry.target.classList.add('section-active');
+            }
+        });
+    }, { root: editor, threshold: [0.3, 0.6] });
+
+    editor.querySelectorAll('.editor-section').forEach(section => observer.observe(section));
+}
+
+// --- Confetti Burst (for PDF export & 100% progress) ---
+function fireConfetti() {
+    const container = document.createElement('div');
+    container.className = 'confetti-container';
+    document.body.appendChild(container);
+
+    const colors = ['#6366f1', '#8b5cf6', '#ec4899', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
+    const shapes = ['circle', 'square', 'strip'];
+
+    for (let i = 0; i < 50; i++) {
+        const piece = document.createElement('div');
+        const shape = shapes[Math.floor(Math.random() * shapes.length)];
+        piece.className = `confetti-piece ${shape}`;
+        piece.style.left = Math.random() * 100 + '%';
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.animationDelay = Math.random() * 0.5 + 's';
+        piece.style.animationDuration = (Math.random() * 1.5 + 2) + 's';
+        piece.style.setProperty('--rotation', (Math.random() * 1440 - 720) + 'deg');
+        piece.style.setProperty('--drift', (Math.random() * 200 - 100) + 'px');
+        piece.style.width = (Math.random() * 6 + 4) + 'px';
+        piece.style.height = shape === 'strip' ? (Math.random() * 10 + 6) + 'px' : piece.style.width;
+        container.appendChild(piece);
+    }
+
+    setTimeout(() => container.remove(), 3500);
+}
+
+// --- Enhanced Progress with Celebration ---
+const _origUpdateProgress = updateProgress;
+updateProgress = function() {
+    _origUpdateProgress();
+    const bar = document.getElementById('progress-bar');
+    const container = bar?.parentElement;
+    if (bar && container) {
+        const width = parseFloat(bar.style.width);
+        if (width >= 100 && !container.classList.contains('progress-complete')) {
+            container.classList.add('progress-complete');
+            fireConfetti();
+            showToast('Resume 100% complete! Ready to export.', 'success');
+        } else if (width < 100) {
+            container.classList.remove('progress-complete');
+        }
+    }
+};
+
+// --- Keyboard Shortcuts ---
+function initKeyboardShortcuts() {
+    document.addEventListener('keydown', (e) => {
+        // Cmd/Ctrl + S → Export PDF
+        if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+            e.preventDefault();
+            const btn = document.getElementById('download-pdf');
+            if (btn) btn.click();
+        }
+        // Cmd/Ctrl + E → Export JSON
+        if ((e.metaKey || e.ctrlKey) && e.key === 'e') {
+            e.preventDefault();
+            const btn = document.getElementById('export-json');
+            if (btn) btn.click();
+        }
+        // Escape → Close modals
+        if (e.key === 'Escape') {
+            const modal = document.getElementById('ai-modal');
+            if (modal && !modal.classList.contains('hidden')) {
+                closeModal('ai-modal');
+            }
+        }
+    });
+}
+
+// --- Typewriter Effect for AI Output ---
+function typewriterEffect(element, text, speed = 15) {
+    return new Promise(resolve => {
+        element.textContent = '';
+        element.classList.add('typewriter-cursor');
+        let i = 0;
+        const timer = setInterval(() => {
+            if (i < text.length) {
+                element.textContent += text[i];
+                i++;
+            } else {
+                clearInterval(timer);
+                element.classList.remove('typewriter-cursor');
+                resolve();
+            }
+        }, speed);
+    });
+}
+
+// --- Smooth Number Counter ---
+function animateNumber(element, from, to, duration = 600) {
+    const start = performance.now();
+    element.classList.add('counting');
+    function update(now) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        // Ease out cubic
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const current = Math.round(from + (to - from) * eased);
+        element.textContent = current + '%';
+        if (progress < 1) {
+            requestAnimationFrame(update);
+        } else {
+            element.classList.remove('counting');
+        }
+    }
+    requestAnimationFrame(update);
+}
+
+// --- PDF Export Confetti Hook ---
+function hookPdfExportConfetti() {
+    ['download-pdf', 'download-pdf-mobile', 'download-pdf-menu'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (!btn) return;
+        btn.addEventListener('click', () => {
+            setTimeout(() => fireConfetti(), 1500);
+        }, { once: false });
+    });
+}
+
+// --- Input Character Counter ---
+function initCharCounters() {
+    document.querySelectorAll('textarea[data-field]').forEach(textarea => {
+        const counter = document.createElement('div');
+        counter.className = 'text-xs text-gray-400 text-right mt-1 transition-colors';
+        counter.style.fontVariantNumeric = 'tabular-nums';
+        textarea.parentElement.appendChild(counter);
+
+        function update() {
+            const len = textarea.value.length;
+            counter.textContent = len + ' characters';
+            if (len > 300) {
+                counter.style.color = '#ef4444';
+            } else if (len > 200) {
+                counter.style.color = '#f59e0b';
+            } else {
+                counter.style.color = '';
+            }
+        }
+        textarea.addEventListener('input', update);
+        update();
+    });
+}
+
+// --- Initialize All Enhanced Features ---
+function initEnhancedFeatures() {
+    initCursorGlow();
+    initCardSpotlight();
+    initActiveSectionTracking();
+    initKeyboardShortcuts();
+    initCharCounters();
+    hookPdfExportConfetti();
+}
+
+// Run after DOM is ready (hook into existing DOMContentLoaded or run if already loaded)
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initEnhancedFeatures);
+} else {
+    initEnhancedFeatures();
+}

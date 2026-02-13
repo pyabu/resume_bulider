@@ -114,7 +114,7 @@
 
                 <button id="download-pdf"
                     class="btn-primary bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-5 py-2.5 rounded-xl font-semibold transition-all shadow-lg shadow-indigo-500/25 flex items-center gap-2 text-sm">
-                    <i class="fa-solid fa-download"></i> Export PDF
+                    <i class="fa-solid fa-download"></i> Export PDF <span class="kbd-hint ml-1 hidden lg:inline-flex">⌘S</span>
                 </button>
             </div>
         </div>
@@ -208,11 +208,26 @@
             id="editor-panel">
             <div class="max-w-2xl mx-auto space-y-4 md:space-y-5 stagger-children">
 
-                <!-- Personal Info -->
+                <!-- Welcome Tip Banner -->
+                <div class="welcome-banner animate-fade-in-up" id="welcome-banner" style="animation-delay: 0ms;">
+                    <div class="bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 border border-indigo-100/60 rounded-2xl p-4 flex items-start gap-3 relative overflow-hidden">
+                        <div class="absolute inset-0 opacity-30" style="background: radial-gradient(circle at 90% 10%, rgba(99,102,241,0.1), transparent 50%);"></div>
+                        <span class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center text-white text-xs flex-shrink-0 shadow-md">
+                            <i class="fa-solid fa-sparkles"></i>
+                        </span>
+                        <div class="relative z-10 flex-1">
+                            <p class="text-sm font-semibold text-gray-700 mb-0.5">Welcome to AI Resume Builder</p>
+                            <p class="text-xs text-gray-500">Fill in your details below and use <span class="kbd-hint">AI Write</span> to auto-generate professional content. Your resume updates live as you type!</p>
+                        </div>
+                        <button onclick="this.closest('.welcome-banner').style.display='none'" class="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0 mt-0.5">
+                            <i class="fa-solid fa-xmark text-xs"></i>
+                        </button>
+                    </div>
+                </div>
                 <section class="editor-section animate-fade-in-up">
                     <div class="editor-section-header flex items-center justify-between mb-5" onclick="toggleSection(this)">
                         <h2 class="text-base font-bold text-gray-800 flex items-center gap-3">
-                            <span class="section-icon"><i class="fa-solid fa-user"></i></span>
+                            <span class="section-icon" style="--badge-hue: 240;"><i class="fa-solid fa-user"></i></span>
                             Personal Information
                         </h2>
                         <i class="fa-solid fa-chevron-down section-collapse-icon text-gray-400 text-xs"></i>
@@ -262,11 +277,13 @@
                     </div>
                 </section>
 
+                <div class="section-divider"></div>
+
                 <!-- Experience -->
-                <section class="editor-section animate-fade-in-up">
+                <section class="editor-section animate-fade-in-up" style="counter-reset: form-item;">
                     <div class="editor-section-header flex items-center justify-between mb-5" onclick="toggleSection(this)">
                         <h2 class="text-base font-bold text-gray-800 flex items-center gap-3">
-                            <span class="section-icon"><i class="fa-solid fa-briefcase"></i></span>
+                            <span class="section-icon" style="--badge-hue: 200;"><i class="fa-solid fa-briefcase"></i></span>
                             Experience
                         </h2>
                         <div class="flex items-center gap-2">
@@ -283,11 +300,13 @@
                     </div>
                 </section>
 
+                <div class="section-divider"></div>
+
                 <!-- Education -->
                 <section class="editor-section animate-fade-in-up">
                     <div class="editor-section-header flex items-center justify-between mb-5" onclick="toggleSection(this)">
                         <h2 class="text-base font-bold text-gray-800 flex items-center gap-3">
-                            <span class="section-icon"><i class="fa-solid fa-graduation-cap"></i></span>
+                            <span class="section-icon" style="--badge-hue: 280;"><i class="fa-solid fa-graduation-cap"></i></span>
                             Education
                         </h2>
                         <div class="flex items-center gap-2">
@@ -304,11 +323,13 @@
                     </div>
                 </section>
 
+                <div class="section-divider"></div>
+
                 <!-- Skills -->
                 <section class="editor-section animate-fade-in-up">
                     <div class="editor-section-header flex items-center justify-between mb-5" onclick="toggleSection(this)">
                         <h2 class="text-base font-bold text-gray-800 flex items-center gap-3">
-                            <span class="section-icon"><i class="fa-solid fa-code"></i></span>
+                            <span class="section-icon" style="--badge-hue: 150;"><i class="fa-solid fa-code"></i></span>
                             Skills
                         </h2>
                         <i class="fa-solid fa-chevron-down section-collapse-icon text-gray-400 text-xs"></i>
