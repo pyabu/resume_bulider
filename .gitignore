@@ -4,3 +4,4 @@ config.js
 keys.txt
 generate-encrypted-key.js
 crypto-utils.js
+*.bak
