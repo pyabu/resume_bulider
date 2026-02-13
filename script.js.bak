@@ -23,7 +23,7 @@ let resumeData = {
     ],
     skills: ["JavaScript", "React", "Node.js", "System Design", "Leadership"],
     template: "professional",
-    color: "#6366f1"
+    color: "#4f46e5"
 };
 
 let activeAiField = null;
@@ -284,11 +284,11 @@ function showToast(message, type = 'info') {
 
 // --- Section Toggle ---
 window.toggleSection = function(header) {
-    const section = header.closest('.editor-section, .editor-card');
+    const section = header.closest('.editor-section');
     const icon = header.querySelector('.section-collapse-icon');
-    if (section) section.classList.toggle('section-collapsed');
+    section.classList.toggle('section-collapsed');
     // Bounce the icon
-    if (icon) icon.style.transition = 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
+    icon.style.transition = 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
 }
 
 // --- Zoom Preview ---
@@ -659,8 +659,8 @@ function importJSON(e) {
             populateForms();
             renderPreview();
             renderSkillsTags();
-            updateColor(resumeData.color || '#6366f1');
-            document.getElementById('color-picker').value = resumeData.color || '#6366f1';
+            updateColor(resumeData.color || '#4f46e5');
+            document.getElementById('color-picker').value = resumeData.color || '#4f46e5';
             document.getElementById('template-select').value = resumeData.template || 'professional';
             showToast('Resume loaded successfully!', 'success');
         } catch (err) {
