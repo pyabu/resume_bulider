@@ -554,6 +554,15 @@ function initMobileUI() {
         pdfMobile.addEventListener('click', () => window.print());
     }
 
+    // Menu PDF download button
+    const pdfMenu = document.getElementById('download-pdf-menu');
+    if (pdfMenu) {
+        pdfMenu.addEventListener('click', () => {
+            document.getElementById('mobile-menu').classList.add('hidden');
+            window.print();
+        });
+    }
+
     // Mobile export/import
     const exportMobile = document.getElementById('export-json-mobile');
     if (exportMobile) exportMobile.addEventListener('click', exportJSON);
@@ -1096,51 +1105,6 @@ window.openAiModal = function (type, index) {
     document.getElementById('ai-keywords').value = '';
 }
 
-// OpenRouter API Key — loaded from config.js (gitignored) or localStorage
-function getApiKey() {
-    // 1. Check localStorage (user-entered key takes priority)
-    const localKey = localStorage.getItem('openrouter_api_key');
-    if (localKey) return localKey;
-
-    // 2. Check config.js ENV (gitignored file, acts like .env)
-    if (typeof ENV !== 'undefined' && ENV.OPENROUTER_API_KEY) {
-        return ENV.OPENROUTER_API_KEY;
-    }
-
-    // 3. No key found — prompt user
-    openApiKeyModal();
-    throw new Error('API key not set. Please add it to config.js or enter it in the settings.');
-}
-
-function openApiKeyModal() {
-    const input = document.getElementById('api-key-input');
-    const saved = localStorage.getItem('openrouter_api_key');
-    if (saved) input.value = saved;
-    document.getElementById('api-key-modal').classList.remove('hidden');
-}
-
-function saveApiKey() {
-    const key = document.getElementById('api-key-input').value.trim();
-    if (!key) {
-        showToast('Please enter a valid API key.', 'error');
-        return;
-    }
-    localStorage.setItem('openrouter_api_key', key);
-    closeModal('api-key-modal');
-    showToast('API key saved securely in your browser!', 'success');
-}
-
-function toggleApiKeyVisibility() {
-    const input = document.getElementById('api-key-input');
-    const icon = document.getElementById('api-key-eye');
-    if (input.type === 'password') {
-        input.type = 'text';
-        icon.classList.replace('fa-eye', 'fa-eye-slash');
-    } else {
-        input.type = 'password';
-        icon.classList.replace('fa-eye-slash', 'fa-eye');
-    }
-}
 
 async function runAiGeneration() {
     if (!activeAiField) return;
@@ -1161,7 +1125,7 @@ async function runAiGeneration() {
         updateFieldWithAI(generatedText);
         closeModal('ai-modal');
     } catch (error) {
-        console.error("AI Error:", error);
+        console.error("AI Error:", error?.message || "Generation failed");
         showToast('AI generation failed, using fallback.', 'error');
         // Fallback
         const mockText = generateSmartMock(activeAiField.type, tone, keywords);
@@ -1187,21 +1151,10 @@ function updateFieldWithAI(text) {
 }
 
 async function fetchOpenRouter(prompt) {
-    const apiKey = getApiKey();
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    const response = await fetch('/api/generate', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`,
-            'HTTP-Referer': window.location.href, // Required by OpenRouter for free tier rankings
-            'X-Title': 'Resume Builder App'
-        },
-        body: JSON.stringify({
-            model: "google/gemini-2.5-flash-lite",
-            messages: [{ role: "user", content: prompt }],
-            temperature: 0.7,
-            max_tokens: 300
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, temperature: 0.7, max_tokens: 300 })
     });
 
     if (!response.ok) {
