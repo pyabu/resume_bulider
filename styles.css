@@ -1546,14 +1546,18 @@ body.dark-mode .mobile-menu-drawer .border-b {
 
     #preview-section {
         width: 100%;
-        height: auto;
-        min-height: calc(100vh - 56px - 48px);
-        min-height: calc(100dvh - 56px - 48px);
+        height: calc(100vh - 56px - 48px);
+        height: calc(100dvh - 56px - 48px);
         padding: 12px;
+        padding-bottom: 70px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
     #preview-section.mobile-panel-active {
         display: flex !important;
+        flex-direction: column;
+        align-items: center;
     }
 
     #resume-preview {
@@ -1563,6 +1567,8 @@ body.dark-mode .mobile-menu-drawer .border-b {
         font-size: 11px;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         border-radius: 12px;
+        flex-shrink: 0;
+        margin-bottom: 20px;
     }
 
     .panel-resizer {
@@ -1570,10 +1576,12 @@ body.dark-mode .mobile-menu-drawer .border-b {
     }
 
     .zoom-controls {
-        bottom: 12px;
+        position: fixed;
+        bottom: 60px;
         right: 12px;
         transform: scale(0.85);
         transform-origin: bottom right;
+        z-index: 30;
     }
 
     .editor-section {

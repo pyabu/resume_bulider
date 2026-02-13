@@ -473,20 +473,21 @@ function initMobileUI() {
     function switchTab(tab) {
         if (tab === 'editor') {
             editorPanel.classList.add('mobile-panel-active');
-            editorPanel.classList.remove('mobile-panel-hidden');
+            editorPanel.classList.remove('mobile-panel-hidden', 'hidden');
             previewSection.classList.add('mobile-panel-hidden');
             previewSection.classList.remove('mobile-panel-active');
+            previewSection.classList.add('hidden');
+            previewSection.style.display = '';
             tabEditor.classList.add('active');
             tabPreview.classList.remove('active');
         } else {
             previewSection.classList.add('mobile-panel-active');
-            previewSection.classList.remove('mobile-panel-hidden');
+            previewSection.classList.remove('mobile-panel-hidden', 'hidden');
             previewSection.style.display = 'flex';
-            editorPanel.classList.add('mobile-panel-hidden');
+            editorPanel.classList.add('mobile-panel-hidden', 'hidden');
             editorPanel.classList.remove('mobile-panel-active');
             tabPreview.classList.add('active');
             tabEditor.classList.remove('active');
-            // Re-render to make sure preview is up to date
             renderPreview();
         }
     }
