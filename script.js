@@ -1,39 +1,13 @@
 // --- State ---
 let resumeData = {
-    name: "Abu Saleem",
-    title: "Full Stack Developer",
-    email: "abu@devstudio.io",
-    phone: "+1 (555) 987-6543",
-    summary: "Creative and results-driven Full Stack Developer with 4+ years of experience building high-performance web applications. Skilled in modern JavaScript frameworks, cloud architecture, and AI integration. Passionate about clean code, intuitive UX, and shipping products that make a difference.",
-    experience: [
-        {
-            company: "NovaTech Solutions",
-            role: "Senior Full Stack Developer",
-            start: "Jan 2024",
-            end: "Present",
-            desc: "Architected and deployed a microservices-based SaaS platform serving 50K+ users. Reduced API response times by 40% through caching strategies and database optimization. Mentored a team of 4 junior developers."
-        },
-        {
-            company: "CloudSync Inc.",
-            role: "Frontend Engineer",
-            start: "Jun 2022",
-            end: "Dec 2023",
-            desc: "Built responsive dashboards and data visualization tools using React and D3.js. Implemented CI/CD pipelines reducing deployment time by 60%. Collaborated with design team on a complete UI overhaul."
-        }
-    ],
-    education: [
-        {
-            school: "Stanford University",
-            degree: "B.S. Computer Science",
-            year: "2022"
-        },
-        {
-            school: "MIT OpenCourseWare",
-            degree: "Machine Learning Certificate",
-            year: "2023"
-        }
-    ],
-    skills: ["JavaScript", "TypeScript", "React", "Next.js", "Node.js", "Python", "PostgreSQL", "AWS", "Docker", "Figma"],
+    name: "",
+    title: "",
+    email: "",
+    phone: "",
+    summary: "",
+    experience: [],
+    education: [],
+    skills: [],
     template: "professional",
     color: "#6366f1"
 };
