@@ -1151,18 +1151,32 @@ function updateFieldWithAI(text) {
 }
 
 async function fetchOpenRouter(prompt) {
-    const response = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, temperature: 0.7, max_tokens: 300 })
-    });
-
-    if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.error?.message || 'API Request Failed');
+    let response;
+    try {
+        response = await fetch('/api/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt, temperature: 0.7, max_tokens: 300 })
+        });
+    } catch (networkErr) {
+        throw new Error('Network error - check your internet connection');
     }
 
-    const data = await response.json();
+    let data;
+    try {
+        data = await response.json();
+    } catch (parseErr) {
+        throw new Error(`Server returned invalid response (status ${response.status})`);
+    }
+
+    if (!response.ok) {
+        throw new Error(data.error || `API error (status ${response.status})`);
+    }
+
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+        throw new Error('Unexpected API response format');
+    }
+
     return data.choices[0].message.content.trim();
 }
 

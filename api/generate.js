@@ -1,5 +1,15 @@
-export default async function handler(req, res) {
-    // Only allow POST
+const https = require('https');
+
+module.exports = async function handler(req, res) {
+    // CORS headers
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
@@ -16,31 +26,52 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'Prompt is required.' });
         }
 
-        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`,
-                'HTTP-Referer': req.headers.referer || req.headers.origin || 'https://resume-builder.vercel.app',
-                'X-Title': 'Resume Builder App'
-            },
-            body: JSON.stringify({
-                model: 'google/gemini-2.5-flash-lite',
-                messages: [{ role: 'user', content: prompt }],
-                temperature,
-                max_tokens
-            })
+        const requestBody = JSON.stringify({
+            model: 'google/gemini-2.5-flash-lite',
+            messages: [{ role: 'user', content: prompt }],
+            temperature,
+            max_tokens
         });
 
-        if (!response.ok) {
-            const err = await response.json();
-            return res.status(response.status).json({ error: err.error?.message || 'API request failed' });
-        }
+        const data = await new Promise((resolve, reject) => {
+            const options = {
+                hostname: 'openrouter.ai',
+                path: '/api/v1/chat/completions',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`,
+                    'HTTP-Referer': req.headers.referer || req.headers.origin || 'https://resume-builder.vercel.app',
+                    'X-Title': 'Resume Builder App',
+                    'Content-Length': Buffer.byteLength(requestBody)
+                }
+            };
 
-        const data = await response.json();
+            const request = https.request(options, (response) => {
+                let body = '';
+                response.on('data', (chunk) => body += chunk);
+                response.on('end', () => {
+                    try {
+                        const parsed = JSON.parse(body);
+                        if (response.statusCode !== 200) {
+                            reject(new Error(parsed.error?.message || `API returned ${response.statusCode}`));
+                        } else {
+                            resolve(parsed);
+                        }
+                    } catch (e) {
+                        reject(new Error('Failed to parse API response'));
+                    }
+                });
+            });
+
+            request.on('error', reject);
+            request.write(requestBody);
+            request.end();
+        });
+
         return res.status(200).json(data);
     } catch (error) {
         console.error('Generate API error:', error);
-        return res.status(500).json({ error: 'Internal server error' });
+        return res.status(500).json({ error: error.message || 'Internal server error' });
     }
-}
+};
